@@ -56,7 +56,19 @@ function Set-GitHubSignLatestCommit {
     # Now move the branch to point to new commit
     $updateRefUrl = "https://api.github.com/repos/$OwnerName/$RepositoryName/git/refs/heads/$BranchName"
     $updatePayload = @{ sha = $newCommit.sha; force = $true } | ConvertTo-Json
-    Invoke-RestMethod -Uri $updateRefUrl -Method POST -Headers $headers -Body $updatePayload -ContentType "application/json"
+   $response = Invoke-RestMethod -Uri $updateRefUrl -Method POST -Headers $headers -Body $updatePayload -ContentType "application/json"
 
+   
+$response | ConvertTo-Json -Depth 12 | Write-Host
+# Just the “Verified” badge info
+$verified   = $response.data.createCommitOnBranch.commit.verification.verified
+$reason     = $response.data.createCommitOnBranch.commit.verification.reason
+$commitUrl  = $response.data.createCommitOnBranch.commit.url
+$commitSha  = $response.data.createCommitOnBranch.commit.oid
+
+Write-Host "Commit: $commitSha"
+Write-Host "URL   : $commitUrl"
+Write-Host "Signed: $verified  ($reason)"
     Write-Host "✅ Signed and updated branch to commit: $($newCommit.sha)"
+ Write-Host "✅ response here: $($response)"
 }
